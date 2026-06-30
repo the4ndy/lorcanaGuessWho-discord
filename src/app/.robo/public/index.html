@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Who Am I - Player Dashboard</title>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Inter:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0e14;
+            --primary: #8b5cf6;
+            --primary-hover: #7c3aed;
+            --text-main: #f8fafc;
+            --text-accent: #FFD700;
+            --text-muted: #94a3b8;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --card-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Lobby */
+        #lobbyView {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .lobby-box {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid var(--card-border);
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .room-code-display {
+            font-size: 4rem;
+            letter-spacing: 5px;
+            color: var(--text-accent);
+            margin: 20px 0;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .player-list {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .player-list li {
+            background: rgba(0, 0, 0, 0.3);
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        button.btn-primary {
+            width: 100%;
+            padding: 16px;
+            font-size: 1.2rem;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            background: var(--primary);
+            color: white;
+            border-radius: 12px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        button.btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        /* Active Game */
+        #activeView {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+        }
+
+        #topArea {
+            flex: 0 0 auto;
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border-bottom: 1px solid var(--card-border);
+            overflow-x: auto;
+            align-items: center;
+        }
+
+        .other-player-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            min-width: 150px;
+        }
+
+        .other-player-card img {
+            width: 150px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .other-player-card .name {
+            margin-top: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--text-accent);
+        }
+
+        #bottomArea {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .filter-bar input,
+        .filter-bar select {
+            padding: 10px;
+            font-size: 1rem;
+            border-radius: 8px;
+            background: #222;
+            color: white;
+            border: 1px solid #555;
+            outline: none;
+        }
+
+        #playerCardGrid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            overflow-y: auto;
+            flex: 1;
+            align-content: flex-start;
+        }
+
+        .guess-card {
+            background: var(--card-bg);
+            padding: 10px;
+            border-radius: 12px;
+            border: 2px solid transparent;
+            width: 140px;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .guess-card:hover {
+            border-color: var(--text-accent);
+        }
+
+        .guess-card.wrong {
+            opacity: 0.3;
+            filter: grayscale(1);
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        /* Game Over */
+        #gameOverView {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .winner-text {
+            font-size: 3rem;
+            color: var(--text-accent);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 8px 12px;
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+        }
+
+        .filter-label {
+            font-weight: bold;
+            color: var(--text-accent);
+            white-space: nowrap;
+        }
+
+        .filter-toggles {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 5px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .filter-toggles::-webkit-scrollbar {
+            display: none;
+        }
+
+        .toggle-btn {
+            background: #222;
+            border: 1px solid #555;
+            color: white;
+            padding: 5px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .toggle-btn:hover {
+            border-color: #888;
+        }
+
+        .toggle-btn.active {
+            background: var(--primary);
+            border-color: var(--primary-hover);
+            color: white;
+            font-weight: bold;
+        }
+
+        #cardTooltip {
+            position: fixed;
+            display: none;
+            z-index: 9999;
+            pointer-events: none;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 5px;
+        }
+
+        #cardTooltip img {
+            max-height: 400px;
+            max-width: 280px;
+            width: auto;
+            border-radius: 8px;
+            display: block;
+        }
+
+        .invite-section {
+            margin: 15px 0 25px 0;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .invite-section input {
+            flex: 1;
+            padding: 10px 15px;
+            font-size: 1rem;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            color: var(--text-muted);
+            outline: none;
+            user-select: all;
+        }
+
+        .invite-section button {
+            padding: 10px 15px;
+            font-size: 1rem;
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .invite-section button:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        #toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--primary);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 10000;
+        }
+
+        #toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+    </style>
+  <script type="module" crossorigin src="/assets/index-0I_IaYHu.js"></script>
+</head>
+
+<body>
+    <!-- Lobby View -->
+    <div id="lobbyView" class="hidden">
+        <div class="lobby-box">
+            <h2>Who Am I - Lorcana</h2>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Waiting for players to join this Activity...</p>
+
+            <h3>Players Joined</h3>
+            <ul class="player-list" id="lobbyPlayers"></ul>
+            <button class="btn-primary" id="startGameBtn" onclick="startGame()" disabled>Start Game (Need 2+)</button>
+        </div>
+    </div>
+
+    <!-- Active Game View -->
+    <div id="activeView" class="hidden">
+        <!-- Other players' cards -->
+        <div id="topArea"></div>
+
+        <!-- My guessing area -->
+        <div id="bottomArea">
+            <h2 style="margin-bottom: 15px;">Yes or No questions only, first to guess their card wins!</h2>
+            <div class="filter-bar">
+                <div style="display: flex; gap: 15px; width: 100%; align-items: center;">
+                    <input type="text" id="playerCardSearch" placeholder="Search name or title..."
+                        onkeyup="filterPlayerCards()"
+                        style="flex: 1; min-width: 200px; padding: 10px 15px; border-radius: 8px; background: rgba(0,0,0,0.4); color: white; border: 1px solid var(--card-border); font-size: 1rem; outline: none;">
+                    <button class="btn-secondary" id="advancedFiltersBtn" onclick="toggleAdvancedFilters()"
+                        style="padding: 10px 20px; font-size: 1rem; border-radius: 8px; cursor: pointer; white-space: nowrap;">Filters
+                        ▼</button>
+                </div>
+
+                <div id="advancedFiltersPanel"
+                    style="display: none; flex-wrap: wrap; gap: 15px; width: 100%; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; border: 1px solid var(--card-border); box-sizing: border-box; max-height: 40vh; overflow-y: auto; margin-bottom: 10px;">
+                    <div class="filter-group">
+                        <div class="filter-label">Colors</div>
+                        <div class="filter-toggles" id="colorToggles">
+                            <button class="toggle-btn color-toggle" data-val="Amber">Amber</button>
+                            <button class="toggle-btn color-toggle" data-val="Amethyst">Amethyst</button>
+                            <button class="toggle-btn color-toggle" data-val="Emerald">Emerald</button>
+                            <button class="toggle-btn color-toggle" data-val="Ruby">Ruby</button>
+                            <button class="toggle-btn color-toggle" data-val="Sapphire">Sapphire</button>
+                            <button class="toggle-btn color-toggle" data-val="Steel">Steel</button>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <div class="filter-label">Cost</div>
+                        <div class="filter-toggles" id="costToggles">
+                            <button class="toggle-btn cost-toggle" data-val="0">0</button>
+                            <button class="toggle-btn cost-toggle" data-val="1">1</button>
+                            <button class="toggle-btn cost-toggle" data-val="2">2</button>
+                            <button class="toggle-btn cost-toggle" data-val="3">3</button>
+                            <button class="toggle-btn cost-toggle" data-val="4">4</button>
+                            <button class="toggle-btn cost-toggle" data-val="5">5</button>
+                            <button class="toggle-btn cost-toggle" data-val="6">6</button>
+                            <button class="toggle-btn cost-toggle" data-val="7">7</button>
+                            <button class="toggle-btn cost-toggle" data-val="8">8</button>
+                            <button class="toggle-btn cost-toggle" data-val="9+">9+</button>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <div class="filter-label">Type</div>
+                        <div class="filter-toggles" id="typeToggles">
+                            <button class="toggle-btn type-toggle" data-val="character">Character</button>
+                            <button class="toggle-btn type-toggle" data-val="item">Item</button>
+                            <button class="toggle-btn type-toggle" data-val="action">Action</button>
+                            <button class="toggle-btn type-toggle" data-val="location">Location</button>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <div class="filter-label">Rarity</div>
+                        <div class="filter-toggles" id="rarityToggles">
+                            <button class="toggle-btn rarity-toggle" data-val="common">Common</button>
+                            <button class="toggle-btn rarity-toggle" data-val="uncommon">Uncommon</button>
+                            <button class="toggle-btn rarity-toggle" data-val="rare">Rare</button>
+                            <button class="toggle-btn rarity-toggle" data-val="super_rare">Super Rare</button>
+                            <button class="toggle-btn rarity-toggle" data-val="legendary">Legendary</button>
+                            <button class="toggle-btn rarity-toggle" data-val="enchanted">Enchanted</button>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <div class="filter-label">Inkable</div>
+                        <div class="filter-toggles" id="inkToggles">
+                            <button class="toggle-btn ink-toggle" data-val="1">Yes</button>
+                            <button class="toggle-btn ink-toggle" data-val="0">No</button>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <div class="filter-label">Lore</div>
+                        <div class="filter-toggles" id="loreToggles">
+                            <button class="toggle-btn lore-toggle" data-val="0">0</button>
+                            <button class="toggle-btn lore-toggle" data-val="1">1</button>
+                            <button class="toggle-btn lore-toggle" data-val="2">2</button>
+                            <button class="toggle-btn lore-toggle" data-val="3">3</button>
+                            <button class="toggle-btn lore-toggle" data-val="4">4</button>
+                            <button class="toggle-btn lore-toggle" data-val="5+">5+</button>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <div class="filter-label">Strength</div>
+                        <div class="filter-toggles" id="strengthToggles">
+                            <button class="toggle-btn strength-toggle" data-val="0">0</button>
+                            <button class="toggle-btn strength-toggle" data-val="1">1</button>
+                            <button class="toggle-btn strength-toggle" data-val="2">2</button>
+                            <button class="toggle-btn strength-toggle" data-val="3">3</button>
+                            <button class="toggle-btn strength-toggle" data-val="4">4</button>
+                            <button class="toggle-btn strength-toggle" data-val="5">5</button>
+                            <button class="toggle-btn strength-toggle" data-val="6">6</button>
+                            <button class="toggle-btn strength-toggle" data-val="7">7</button>
+                            <button class="toggle-btn strength-toggle" data-val="8">8</button>
+                            <button class="toggle-btn strength-toggle" data-val="9+">9+</button>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <div class="filter-label">Will</div>
+                        <div class="filter-toggles" id="willpowerToggles">
+                            <button class="toggle-btn willpower-toggle" data-val="1">1</button>
+                            <button class="toggle-btn willpower-toggle" data-val="2">2</button>
+                            <button class="toggle-btn willpower-toggle" data-val="3">3</button>
+                            <button class="toggle-btn willpower-toggle" data-val="4">4</button>
+                            <button class="toggle-btn willpower-toggle" data-val="5">5</button>
+                            <button class="toggle-btn willpower-toggle" data-val="6">6</button>
+                            <button class="toggle-btn willpower-toggle" data-val="7">7</button>
+                            <button class="toggle-btn willpower-toggle" data-val="8">8</button>
+                            <button class="toggle-btn willpower-toggle" data-val="9+">9+</button>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <div class="filter-label">Set</div>
+                        <div class="filter-toggles" id="setToggles">
+                            <button class="toggle-btn set-toggle" data-val="001">The First Chapter</button>
+                            <button class="toggle-btn set-toggle" data-val="002">Rise of the Floodborn</button>
+                            <button class="toggle-btn set-toggle" data-val="003">Into the Inklands</button>
+                            <button class="toggle-btn set-toggle" data-val="004">Ursula's Return</button>
+                            <button class="toggle-btn set-toggle" data-val="005">Shimmering Skies</button>
+                            <button class="toggle-btn set-toggle" data-val="006">Azurite Sea</button>
+                            <button class="toggle-btn set-toggle" data-val="007">Archazia's Island</button>
+                            <button class="toggle-btn set-toggle" data-val="008">Reign of Jafar</button>
+                            <button class="toggle-btn set-toggle" data-val="009">Fabled</button>
+                            <button class="toggle-btn set-toggle" data-val="010">Whispers in the Well</button>
+                            <button class="toggle-btn set-toggle" data-val="011">Winterspell</button>
+                            <button class="toggle-btn set-toggle" data-val="012">Wilds Unknown</button>
+                            <button class="toggle-btn set-toggle" data-val="013">Attack of the Vine</button>
+                            <button class="toggle-btn set-toggle" data-val="014">Hyperia City</button>
+                            <button class="toggle-btn set-toggle" data-val="015">Into The Inkdark</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="playerCardGrid"></div>
+        </div>
+    </div>
+
+    <!-- Game Over View -->
+    <div id="gameOverView" class="hidden">
+        <div class="lobby-box">
+            <div class="winner-text" id="winnerText"></div>
+            <div style="margin-bottom: 20px;" id="scoreboardList"></div>
+            <button class="btn-primary" onclick="playAgain()">Return to Lobby</button>
+        </div>
+    </div>
+
+    <div id="cardTooltip"><img src="" id="tooltipImg"></div>
+
+</body>
+
+</html>

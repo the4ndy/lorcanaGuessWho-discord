@@ -14,10 +14,14 @@
     "language": "javascript",
     "mode": "development",
     "type": "robo",
-    "updatedAt": "2026-06-30T18:45:08.970Z",
+    "updatedAt": "2026-06-30T18:52:08.952Z",
     "version": "0.10.32"
   },
-  "api": {},
+  "api": {
+    "cards-summary": {
+      "__path": "\\.robo\\build\\api\\cards-summary.js"
+    }
+  },
   "commands": {
     "help": {
       "__auto": true,
