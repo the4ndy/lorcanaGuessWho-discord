@@ -1,7 +1,6 @@
 {
-	"id": "41220",
-	"pid": 41220,
-	"startedAt": 1782841644999,
-	"status": "stopped",
-	"localUrl": "http://0.0.0.0:3000"
+	"id": "37024",
+	"pid": 37024,
+	"startedAt": 1782844841053,
+	"status": "running"
 }
