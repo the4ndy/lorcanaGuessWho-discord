@@ -518,9 +518,10 @@
 
     <script type="module">
         import { DiscordSDK } from '@discord/embedded-app-sdk';
-        import { patch } from '@robojs/patch';
+        import { DiscordProxy } from '@robojs/patch';
 
-        patch(); // Patch fetch/websocket for Discord proxy
+        // Apply Discord Proxy patch for Vite/Robo
+        DiscordProxy.patch();
 
         let discordSdk;
         let auth;
