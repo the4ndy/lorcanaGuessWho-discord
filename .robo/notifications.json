@@ -1,0 +1,10 @@
+[
+	{
+		"action": {
+			"command": "npx robo build --force",
+			"label": "Fix"
+		},
+		"message": "Command registration failed.",
+		"type": "warning"
+	}
+]

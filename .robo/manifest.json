@@ -3,13 +3,18 @@
   "__robo": {
     "config": {
       "clientOptions": {
-        "intents": []
-      }
+        "intents": [
+          1
+        ]
+      },
+      "plugins": [
+        "@robojs/server"
+      ]
     },
     "language": "javascript",
-    "mode": "production",
+    "mode": "development",
     "type": "robo",
-    "updatedAt": "2026-06-30T13:31:07.588Z",
+    "updatedAt": "2026-06-30T17:47:24.605Z",
     "version": "0.10.32"
   },
   "api": {
@@ -43,9 +48,37 @@
     "user": {}
   },
   "events": {
+    "_restart": [
+      {
+        "__auto": true,
+        "__plugin": {
+          "name": "@robojs/server",
+          "path": "node_modules\\@robojs\\server"
+        },
+        "__path": "/.robo/build/events/_restart.js"
+      }
+    ],
     "_start": [
       {
+        "__auto": true,
+        "__plugin": {
+          "name": "@robojs/server",
+          "path": "node_modules\\@robojs\\server"
+        },
+        "__path": "/.robo/build/events/_start.js"
+      },
+      {
         "__path": "\\.robo\\build\\events\\_start.js"
+      }
+    ],
+    "_stop": [
+      {
+        "__auto": true,
+        "__plugin": {
+          "name": "@robojs/server",
+          "path": "node_modules\\@robojs\\server"
+        },
+        "__path": "/.robo/build/events/_stop.js"
       }
     ],
     "interactionCreate": [
