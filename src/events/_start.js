@@ -49,13 +49,6 @@ export default async () => {
         const httpServer = engine.server || engine.getHttpServer?.() || engine;
         const io = new SocketServer(httpServer, { cors: { origin: "*" } });
 
-        // Forward upgrade events to socket.io since @robojs/server intercepts them
-        if (typeof engine.registerWebsocket === 'function') {
-            engine.registerWebsocket('/socket.io/', (req, socket, head) => {
-                io.engine.handleUpgrade(req, socket, head);
-            });
-        }
-
         io.on('connection', (socket) => {
             socket.on('join_game', (data) => {
                 const room = data.roomCode; // Activity Instance ID
