@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rules of Villainy Trivia</title>
+    <style>
+        :root {
+            --purple: #6955a4;
+            --pink: #e268a7;
+            --teal: #77c5bc;
+            --magenta: #cb3594;
+            --green: #00a594;
+            --deep: #413276;
+            --bg: #1a1530;
+            --surface: #231e40;
+            --surface2: #2e2855;
+            --surface3: #3a3468;
+            --border: rgba(105, 85, 164, 0.35);
+            --border2: rgba(105, 85, 164, 0.6);
+            --text: #f0edf8;
+            --text-muted: #a89fc8;
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+            --radius: 12px;
+            --radius-lg: 18px;
+            /* Aliases */
+            --primary-color: var(--pink);
+            --secondary-color: var(--teal);
+            --success-color: var(--green);
+            --error-color: var(--magenta);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg);
+            background-image:
+                radial-gradient(ellipse at 20% 10%, rgba(105, 85, 164, 0.15) 0%, transparent 55%),
+                radial-gradient(ellipse at 80% 90%, rgba(0, 165, 148, 0.1) 0%, transparent 55%);
+            color: var(--text);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            width: 100%;
+            background: linear-gradient(135deg, #2e285580 0%, #41327680 100%);
+            border-bottom: 1px solid var(--border2);
+            padding: 0 20px;
+            min-height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            backdrop-filter: blur(8px);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            margin-bottom: 40px;
+        }
+
+        .hdr-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .hdr-logo-img {
+            height: 34px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        header h1 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            background: linear-gradient(90deg, var(--pink), var(--teal));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stats-bar {
+            display: none;
+            gap: 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .score-right {
+            color: var(--teal);
+        }
+
+        .score-wrong {
+            color: var(--pink);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            padding: 0 20px 80px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #loading-screen {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--pink);
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .screen {
+            display: none;
+            width: 100%;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+        }
+
+        /* Setup / Question / End Boxes */
+        #setup-screen,
+        .question-box,
+        #end-screen {
+            background: linear-gradient(135deg, var(--surface), var(--surface2));
+            border: 1px solid var(--border2);
+            padding: 40px 32px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            text-align: center;
+            width: 100%;
+        }
+
+        #setup-screen h2,
+        #category-screen h2,
+        #end-screen h2 {
+            color: var(--pink);
+            margin-bottom: 16px;
+            font-size: 2rem;
+        }
+
+        .input-group {
+            margin-bottom: 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .input-group label {
+            font-size: 1rem;
+            color: var(--text-muted);
+        }
+
+        .input-group input {
+            background: var(--surface2);
+            border: 1.5px solid var(--border2);
+            color: var(--text);
+            padding: 12px;
+            font-size: 1.2rem;
+            border-radius: 9px;
+            width: 100px;
+            text-align: center;
+            font-family: inherit;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .input-group input:focus {
+            border-color: var(--pink);
+            box-shadow: 0 0 0 3px rgba(226, 104, 167, 0.15);
+        }
+
+        .setup-categories-section {
+            width: 100%;
+            border-top: 1px solid var(--border);
+            padding-top: 24px;
+            margin-bottom: 32px;
+        }
+
+        .setup-categories-section h3 {
+            margin-top: 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+
+        .cat-controls {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .sm-btn {
+            background: transparent;
+            border: 1px solid var(--border2);
+            color: var(--text-muted);
+            padding: 8px 16px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .sm-btn:hover {
+            background: rgba(105, 85, 164, 0.2);
+            color: var(--text);
+            border-color: var(--pink);
+        }
+
+        .setup-category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+            width: 100%;
+        }
+
+        .cat-toggle-btn {
+            background: var(--surface2);
+            border: 1.5px solid var(--border2);
+            color: var(--text-muted);
+            padding: 16px 12px;
+            border-radius: 9px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .cat-toggle-btn.selected {
+            border-color: var(--teal);
+            background: rgba(0, 165, 148, 0.15);
+            color: var(--teal);
+            box-shadow: 0 0 0 3px rgba(0, 165, 148, 0.1);
+        }
+
+        .cat-toggle-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .category-buttons {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            flex-wrap: wrap;
+            width: 100%;
+            margin-top: 24px;
+        }
+
+        .cat-btn {
+            flex: 1;
+            min-width: 250px;
+            height: 140px;
+            font-size: 1.3rem;
+            border-radius: var(--radius-lg) !important;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            line-height: 1.4;
+        }
+
+        .img-shadow-wrapper {
+            display: none;
+            margin: 0 auto 24px auto;
+            max-width: 250px;
+            border-radius: 12px 12px 0 0;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8);
+            background-color: transparent;
+        }
+
+        #question-image {
+            display: block;
+            width: 100%;
+            border-radius: 12px 12px 0 0;
+            clip-path: inset(0 0 11% 0);
+            margin-bottom: -11%;
+        }
+
+        .question-text {
+            font-size: 1.5rem;
+            font-weight: 800;
+            line-height: 1.4;
+            color: var(--text);
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            width: 100%;
+        }
+
+        /* General Buttons */
+        .md-btn {
+            border: none;
+            padding: 15px 36px;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: inherit;
+            letter-spacing: 0.04em;
+        }
+
+        .md-btn:active:not(:disabled) {
+            transform: scale(0.97);
+        }
+
+        .md-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .md-btn.primary {
+            background: linear-gradient(135deg, var(--magenta), var(--purple));
+            color: #fff;
+            box-shadow: 0 6px 28px rgba(203, 53, 148, 0.35);
+        }
+
+        .md-btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 36px rgba(203, 53, 148, 0.5);
+        }
+
+        .md-btn.secondary {
+            background: transparent;
+            border: 2px solid var(--purple);
+            color: var(--text);
+        }
+
+        .md-btn.secondary:hover {
+            background: rgba(105, 85, 164, 0.2);
+            border-color: var(--pink);
+            transform: translateY(-1px);
+        }
+
+        .md-btn.tertiary {
+            background: linear-gradient(135deg, var(--green), var(--purple));
+            color: #fff;
+            box-shadow: 0 6px 28px rgba(0, 165, 148, 0.35);
+        }
+
+        .md-btn.tertiary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 36px rgba(0, 165, 148, 0.5);
+        }
+
+        .md-btn.option-btn {
+            background: var(--surface2);
+            border: 1.5px solid var(--border2);
+            color: var(--text);
+            border-radius: 9px;
+            text-transform: none;
+            text-align: left;
+            padding: 18px 24px;
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+
+        .md-btn.option-btn:hover:not(:disabled) {
+            border-color: var(--pink);
+            background: rgba(105, 85, 164, 0.15);
+            box-shadow: 0 0 0 3px rgba(226, 104, 167, 0.15);
+        }
+
+        .md-btn.option-btn.correct {
+            background: rgba(0, 165, 148, 0.2) !important;
+            border-color: var(--green) !important;
+            color: #5ee8d6 !important;
+        }
+
+        .md-btn.option-btn.incorrect {
+            background: rgba(203, 53, 148, 0.2) !important;
+            border-color: var(--magenta) !important;
+            color: #f090c4 !important;
+        }
+
+        .next-btn-container {
+            height: 60px;
+            margin-top: 8px;
+        }
+
+        .final-score {
+            font-size: 1.3rem;
+            margin-bottom: 32px;
+            color: var(--text-muted);
+        }
+
+        /* Floating Action Buttons */
+        .floating-fab {
+            position: fixed;
+            right: 32px;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6);
+            transition: all 0.2s ease;
+            z-index: 1000;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .floating-fab svg {
+            width: 32px;
+            height: 32px;
+            fill: #000000;
+        }
+
+        .floating-fab:active {
+            transform: translateY(2px) scale(0.95);
+        }
+
+        .home-fab {
+            bottom: 32px;
+            background-color: var(--teal);
+        }
+
+        .home-fab:hover {
+            background-color: var(--pink);
+            box-shadow: 0 12px 24px rgba(226, 104, 167, 0.4);
+            transform: translateY(-4px);
+        }
+
+        .abandon-fab {
+            display: none;
+            bottom: 112px;
+            background-color: var(--magenta);
+        }
+
+        .abandon-fab:hover {
+            background-color: #e268a7;
+            box-shadow: 0 12px 24px rgba(203, 53, 148, 0.4);
+            transform: translateY(-4px);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--surface3);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="hdr-left">
+            <img class="hdr-logo-img" src="https://the4ndy.github.io/vdo-ninja-styles/ruby_1080.png" alt="Ruby Logo">
+            <h1>Disney Lorcana Trivia</h1>
+        </div>
+        <div class="stats-bar" id="stats-bar">
+            <span>Q: <span id="current-q-num">0</span>/<span id="total-q-num">0</span></span>
+            <span class="score-right">Right: <span id="score-right">0</span></span>
+            <span class="score-wrong">Wrong: <span id="score-wrong">0</span></span>
+        </div>
+    </header>
+
+    <div class="container">
+        <div id="loading-screen">Questing for Lore... (Loading API Data)</div>
+
+        <div id="setup-screen" class="screen">
+            <h2>Game Setup</h2>
+            <div class="input-group">
+                <label for="question-count">How many questions?</label>
+                <input type="number" id="question-count" min="1" max="100" value="10">
+            </div>
+            <div class="setup-categories-section">
+                <h3>Active Categories</h3>
+                <div class="cat-controls">
+                    <button class="sm-btn" onclick="selectAllCats()">Select All</button>
+                    <button class="sm-btn" onclick="selectNoCats()">Select None</button>
+                </div>
+                <div class="setup-category-grid" id="setup-category-grid"></div>
+            </div>
+            <button class="md-btn primary" onclick="startGame()">Start Game</button>
+        </div>
+
+        <div id="category-screen" class="screen">
+            <h2>Select Your Category</h2>
+            <p style="color: var(--text-muted); margin-top: 0; font-size:1.1rem;">Question <span
+                    id="cat-round-tracker"></span></p>
+            <div class="category-buttons" id="category-buttons"></div>
+        </div>
+
+        <div id="game-screen" class="screen">
+            <div class="question-box">
+                <div id="img-shadow-wrapper" class="img-shadow-wrapper">
+                    <img id="question-image" src="" alt="Card Graphic">
+                </div>
+                <div class="question-text" id="question-text">Loading question...</div>
+            </div>
+            <div class="options-list" id="options-list"></div>
+            <div class="next-btn-container">
+                <button id="btn-next" class="md-btn primary" style="display: none;" onclick="nextQuestion()">Next
+                    Question</button>
+            </div>
+        </div>
+
+        <div id="end-screen" class="screen">
+            <h2>Challenge Complete!</h2>
+            <div class="final-score">
+                You got <strong class="score-right" id="final-right">0</strong> right and <strong class="score-wrong"
+                    id="final-wrong">0</strong> wrong.
+            </div>
+            <button class="md-btn primary" onclick="resetGame()">Play Again</button>
+        </div>
+    </div>
+
+    <button id="floating-abandon-btn" class="floating-fab abandon-fab" title="Abandon Game" onclick="abandonGame()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path
+                d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+        </svg>
+    </button>
+    <a href="index.html" class="floating-fab home-fab" title="Return to Arcade Hub">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+        </svg>
+    </a>
+
+    <script>
+        let allCards = []; let nameMap = {}; let classificationMap = {}; let allIllustrators = [];
+        let totalQuestions = 0; let currentRound = 0; let scoreRight = 0; let scoreWrong = 0;
+
+        const getRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
+        const cleanFlavor = (text) => text ? text.replace(/\n/g, ' ').trim() : "";
+        const getFullName = (c) => c.version ? `${c.name} - ${c.version}` : c.name;
+
+        const generateHumanGuesses = (target) => {
+            if (typeof target !== 'number' || isNaN(target)) return ["10", "20", "30"];
+            let step = Math.max(1, Math.round(target * 0.2));
+            if (target >= 20) step = Math.round(step / 5) * 5 || 5;
+            else if (target >= 10) step = Math.round(step / 2) * 2 || 2;
+            let wrongRaw = new Set(); let mode = Math.floor(Math.random() * 3);
+            if (target <= step * 3) mode = Math.random() > 0.5 ? 1 : 2;
+            let d1 = step, d2 = step * 2, d3 = step * 3;
+            if (mode === 0) { wrongRaw.add(target - d1); wrongRaw.add(target - d2); wrongRaw.add(target - d3); }
+            else if (mode === 1) { wrongRaw.add(target + d1); wrongRaw.add(target + d2); wrongRaw.add(target + d3); }
+            else {
+                if (Math.random() > 0.5) { wrongRaw.add(target - d1); wrongRaw.add(target + d2); wrongRaw.add(target - d3); }
+                else { wrongRaw.add(target + d1); wrongRaw.add(target - d2); wrongRaw.add(target + d3); }
+            }
+            let cleanWrong = new Set();
+            wrongRaw.forEach(w => { if (w > 0 && w !== target) { if (target >= 20 && target % 5 === 0) cleanWrong.add(Math.round(w / 5) * 5); else cleanWrong.add(w); } });
+            let fallback = 1, emergencyBreak = 0;
+            while (cleanWrong.size < 3 && emergencyBreak < 100) {
+                let fg = emergencyBreak % 2 === 0 ? target + fallback : target - fallback;
+                if (fg > 0 && fg !== target) cleanWrong.add(fg); fallback += step; emergencyBreak++;
+            }
+            return Array.from(cleanWrong).slice(0, 3).map(String);
+        };
+
+        window.onload = async () => {
+            try {
+                let response = await fetch('https://api.lorcast.com/v0/cards/search?q=""');
+                if (!response.ok) response = await fetch('https://api.lorcast.com/v0/cards');
+                const data = await response.json();
+                allCards = data.results || data;
+
+                allCards.forEach(c => {
+                    if (c.name && c.version) { if (!nameMap[c.name]) nameMap[c.name] = new Set(); nameMap[c.name].add(c.version); }
+                    const isCharacter = Array.isArray(c.type) ? c.type.includes("Character") : c.type === "Character";
+                    if (isCharacter && Array.isArray(c.classifications)) { c.classifications.forEach(sub => { if (!classificationMap[sub]) classificationMap[sub] = 0; classificationMap[sub]++; }); }
+                    if (Array.isArray(c.illustrators)) { c.illustrators.forEach(artist => { if (artist && !allIllustrators.includes(artist)) { allIllustrators.push(artist); } }); }
+                });
+                document.getElementById('loading-screen').style.display = 'none';
+                renderSetupCategories(); document.getElementById('setup-screen').style.display = 'flex';
+            } catch (error) { document.getElementById('loading-screen').innerText = "Error fetching from API. Please try again later."; }
+        };
+
+        const categories = [
+            { id: 'flavor', name: 'Flavor Text of the Week', selected: true, generate: () => { const cardsWithFlavor = allCards.filter(c => c.flavor_text && c.flavor_text.trim() !== ''); const targetCard = getRandom(cardsWithFlavor); const targetName = getFullName(targetCard); const targetFlavor = cleanFlavor(targetCard.flavor_text); const sameNameCards = cardsWithFlavor.filter(c => c.name === targetCard.name && c.id !== targetCard.id); sameNameCards.sort(() => 0.5 - Math.random()); let wrongFlavors = []; for (const c of sameNameCards) { const cleaned = cleanFlavor(c.flavor_text); if (wrongFlavors.length < 2 && cleaned !== targetFlavor && !wrongFlavors.includes(cleaned)) { wrongFlavors.push(cleaned); } } let attempts = 0; while (wrongFlavors.length < 3 && attempts < 200) { const rc = getRandom(cardsWithFlavor); const rFlavor = cleanFlavor(rc.flavor_text); if (rFlavor !== targetFlavor && !wrongFlavors.includes(rFlavor)) { wrongFlavors.push(rFlavor); } attempts++; } return { q: `Which is the correct flavor text for '${targetName}'?`, correct: targetFlavor, incorrect: wrongFlavors, imageUrl: null }; } },
+            { id: 'whats_my_name', name: "What's My Name?", selected: true, generate: () => { const cardsWithVersion = allCards.filter(c => c.version); const targetCard = getRandom(cardsWithVersion); let wrongAnswers = []; let attempts = 0; while (wrongAnswers.length < 3 && attempts < 200) { let rc = getRandom(cardsWithVersion); if (rc.name !== targetCard.name && !wrongAnswers.includes(rc.version) && !nameMap[targetCard.name].has(rc.version)) { wrongAnswers.push(rc.version); } attempts++; } return { q: `Which of these is a sub name of '${targetCard.name}'?`, correct: targetCard.version, incorrect: wrongAnswers, imageUrl: null }; } },
+            { id: 'thats_not_my_name', name: "That's Not My Name", selected: true, generate: () => { const validCharacters = Object.keys(nameMap).filter(name => nameMap[name].size >= 3); const targetName = getRandom(validCharacters); const versionsArray = Array.from(nameMap[targetName]); const realVersions = versionsArray.sort(() => 0.5 - Math.random()).slice(0, 3); let fakeVersion = ""; while (true) { let rc = getRandom(allCards); if (rc.version && rc.name !== targetName && !nameMap[targetName].has(rc.version)) { fakeVersion = rc.version; break; } } return { q: `Which of these is NOT a sub name of '${targetName}'?`, correct: fakeVersion, incorrect: realVersions, imageUrl: null }; } },
+            { id: 'friends_like_me', name: "Friends Like Me", selected: true, generate: () => { const classKeys = Object.keys(classificationMap); if (classKeys.length === 0) { return { q: "How many 'Hero' characters are there in Lorcana?", correct: "100", incorrect: ["90", "110", "120"], imageUrl: null }; } const targetClass = getRandom(classKeys); const targetCount = classificationMap[targetClass]; const wrongAnswers = generateHumanGuesses(targetCount); return { q: `How many '${targetClass}' characters are there in Lorcana?`, correct: targetCount.toString(), incorrect: wrongAnswers, imageUrl: null }; } },
+            { id: 'made_me_ink', name: "You Made Me Ink", selected: true, generate: () => { const inkables = allCards.filter(c => c.inkwell === true); const uninkables = allCards.filter(c => c.inkwell === false); const targetCard = getRandom(inkables); const targetName = getFullName(targetCard); let wrongAnswers = new Set(); while (wrongAnswers.size < 3) { let rc = getRandom(uninkables); wrongAnswers.add(getFullName(rc)); } return { q: "Which of these cards is INKABLE?", correct: targetName, incorrect: Array.from(wrongAnswers), imageUrl: null }; } },
+            { id: 'too_many_uninkables', name: "Too Many Uninkables", selected: true, generate: () => { const inkables = allCards.filter(c => c.inkwell === true); const uninkables = allCards.filter(c => c.inkwell === false); const targetCard = getRandom(uninkables); const targetName = getFullName(targetCard); let wrongAnswers = new Set(); while (wrongAnswers.size < 3) { let rc = getRandom(inkables); wrongAnswers.add(getFullName(rc)); } return { q: "Which of these cards is UNINKABLE?", correct: targetName, incorrect: Array.from(wrongAnswers), imageUrl: null }; } },
+            { id: 'intentional_draw', name: "Intentional Draw", selected: true, generate: () => { const cardsWithArtists = allCards.filter(c => Array.isArray(c.illustrators) && c.illustrators.length > 0); let mode = Math.random() > 0.5 ? 1 : 2; if (mode === 2) { const cardsWithImages = cardsWithArtists.filter(c => c.image_uris && c.image_uris.digital && c.image_uris.digital.normal); if (cardsWithImages.length > 0) { const targetCard = getRandom(cardsWithImages); const targetArtist = targetCard.illustrators[0]; const targetName = getFullName(targetCard); let wrongArtists = new Set(); let emergencyBreak = 0; while (wrongArtists.size < 3 && emergencyBreak < 200) { let rArtist = getRandom(allIllustrators); if (!targetCard.illustrators.includes(rArtist)) { wrongArtists.add(rArtist); } emergencyBreak++; } return { q: `Who illustrated this card: '${targetName}'?`, correct: targetArtist, incorrect: Array.from(wrongArtists), imageUrl: targetCard.image_uris.digital.normal }; } else { mode = 1; } } const targetCard = getRandom(cardsWithArtists); const targetArtist = targetCard.illustrators[0]; const targetName = getFullName(targetCard); let wrongCards = new Set(); let emergencyBreak = 0; while (wrongCards.size < 3 && emergencyBreak < 200) { let rc = getRandom(cardsWithArtists); const sharesArtist = rc.illustrators.some(a => targetCard.illustrators.includes(a)); const rName = getFullName(rc); if (!sharesArtist && rName !== targetName && !wrongCards.has(rName)) { wrongCards.add(rName); } emergencyBreak++; } return { q: `Which of these cards did '${targetArtist}' illustrate?`, correct: targetName, incorrect: Array.from(wrongCards), imageUrl: null }; } },
+            { id: 'that_costs_how_much', name: "That Costs How much?", selected: true, generate: () => { const cardsWithCost = allCards.filter(c => typeof c.cost === 'number'); const questionType = Math.floor(Math.random() * 3); if (questionType === 0) { const targetCard = getRandom(cardsWithCost); const targetCost = targetCard.cost; const targetName = getFullName(targetCard); let wrongRaw = new Set(); if (targetCost > 1) wrongRaw.add(targetCost - 1); else wrongRaw.add(targetCost + 2); wrongRaw.add(targetCost + 1); let attempts = 0; while (wrongRaw.size < 3 && attempts < 100) { let rCost = Math.floor(Math.random() * 10) + 1; if (rCost !== targetCost) wrongRaw.add(rCost); attempts++; } return { q: `How much ink does '${targetName}' cost?`, correct: targetCost.toString(), incorrect: Array.from(wrongRaw).map(String), imageUrl: null }; } else { const isMost = questionType === 1; let validSetFound = false; let selectedCards = []; let attempts = 0; while (!validSetFound && attempts < 200) { let tempSet = new Set(); while (tempSet.size < 4) { tempSet.add(getRandom(cardsWithCost)); } selectedCards = Array.from(tempSet); const costs = selectedCards.map(c => c.cost); const targetVal = isMost ? Math.max(...costs) : Math.min(...costs); const matchingCards = selectedCards.filter(c => c.cost === targetVal); if (matchingCards.length === 1) { validSetFound = true; } attempts++; } if (!validSetFound) { const targetCard = getRandom(cardsWithCost); return { q: `How much ink does '${getFullName(targetCard)}' cost?`, correct: targetCard.cost.toString(), incorrect: [(targetCard.cost + 1).toString(), (targetCard.cost + 2).toString(), (targetCard.cost + 3).toString()], imageUrl: null }; } const costs = selectedCards.map(c => c.cost); const targetVal = isMost ? Math.max(...costs) : Math.min(...costs); const correctCard = selectedCards.find(c => c.cost === targetVal); const incorrectCards = selectedCards.filter(c => c.id !== correctCard.id); const qText = isMost ? "Which of these cards costs the MOST ink?" : "Which of these cards costs the LEAST ink?"; return { q: qText, correct: getFullName(correctCard), incorrect: incorrectCards.map(c => getFullName(c)), imageUrl: null }; } } },
+            { id: 'is_this_rare', name: "Is this rare?", selected: true, generate: () => { const rarityMap = { "common": "Common", "uncommon": "Uncommon", "rare": "Rare", "super_rare": "Super Rare", "legendary": "Legendary", "Common": "Common", "Uncommon": "Uncommon", "Rare": "Rare", "Super_rare": "Super Rare", "Legendary": "Legendary" }; const validKeys = Object.keys(rarityMap); const cardsWithRarity = allCards.filter(c => c.rarity && validKeys.includes(c.rarity)); const targetCard = getRandom(cardsWithRarity); const targetName = getFullName(targetCard); const correctRarity = rarityMap[targetCard.rarity]; const allDisplayRarities = ["Common", "Uncommon", "Rare", "Super Rare", "Legendary"]; const incorrectRarities = allDisplayRarities.filter(r => r !== correctRarity); return { q: `What rarity is '${targetName}'?`, correct: correctRarity, incorrect: incorrectRarities, imageUrl: null }; } },
+            { id: 'location_is_key', name: "Location is key", selected: true, generate: () => { const locations = allCards.filter(c => { const t = Array.isArray(c.type) ? c.type : [c.type]; return t.includes('Location'); }); const qType = Math.floor(Math.random() * 2); if (qType === 0) { const locsWithMoveCost = locations.filter(c => typeof c.move_cost === 'number'); const targetCard = getRandom(locsWithMoveCost); const targetName = getFullName(targetCard); const targetCost = targetCard.move_cost; let wrongRaw = new Set(); if (targetCost > 1) wrongRaw.add(targetCost - 1); if (targetCost < 6) wrongRaw.add(targetCost + 1); while (wrongRaw.size < 3) { let r = Math.floor(Math.random() * 6) + 1; if (r !== targetCost) wrongRaw.add(r); } return { q: `How much does it cost to move to the location '${targetName}'?`, correct: targetCost.toString(), incorrect: Array.from(wrongRaw).slice(0, 3).map(String), imageUrl: null }; } else { const locsWithWillpower = locations.filter(c => typeof c.willpower === 'number'); const targetCard = getRandom(locsWithWillpower); const targetName = getFullName(targetCard); const targetWillpower = targetCard.willpower; let wrongRaw = new Set(); let d1 = Math.random() > 0.5 ? 1 : -1; if (targetWillpower + d1 >= 3 && targetWillpower + d1 <= 9) wrongRaw.add(targetWillpower + d1); else wrongRaw.add(targetWillpower - d1); let d2 = Math.random() > 0.5 ? 2 : -2; if (targetWillpower + d2 >= 3 && targetWillpower + d2 <= 9) wrongRaw.add(targetWillpower + d2); else wrongRaw.add(targetWillpower - d2); let attempts = 0; while (wrongRaw.size < 3 && attempts < 100) { let r = Math.floor(Math.random() * 7) + 3; if (r !== targetWillpower) wrongRaw.add(r); attempts++; } return { q: `How much willpower does '${targetName}' have?`, correct: targetWillpower.toString(), incorrect: Array.from(wrongRaw).slice(0, 3).map(String), imageUrl: null }; } } },
+            { id: 'singers_wanted', name: "Singers Wanted", selected: true, generate: () => { const songs = allCards.filter(c => { if (typeof c.cost !== 'number') return false; const t = Array.isArray(c.type) ? c.type : [c.type]; const cls = Array.isArray(c.classifications) ? c.classifications : []; const sub = Array.isArray(c.subtypes) ? c.subtypes : []; return t.includes("Song") || cls.includes("Song") || sub.includes("Song"); }); const characters = allCards.filter(c => { if (typeof c.cost !== 'number') return false; const t = Array.isArray(c.type) ? c.type : [c.type]; return t.includes("Character"); }); const getEffectiveCost = (card) => { let sVal = 0; if (card.text) { const match = card.text.match(/Singer\s+(\d+)/i); if (match && match[1]) { sVal = parseInt(match[1], 10); } } return Math.max(card.cost || 0, sVal); }; let validSongs = songs.filter(s => s.cost >= 3); if (validSongs.length === 0) validSongs = songs; const targetSong = getRandom(validSongs); const songCost = targetSong.cost; const songName = getFullName(targetSong); const canSing = characters.filter(c => getEffectiveCost(c) >= songCost); const cannotSing = characters.filter(c => getEffectiveCost(c) < songCost); const closeCannotSing = cannotSing.filter(c => { const ec = getEffectiveCost(c); return ec === songCost - 1 || ec === songCost - 2; }); const correctChar = getRandom(canSing); const correctName = getFullName(correctChar); let wrongAnswers = new Set(); let attempts = 0; while (wrongAnswers.size < 3 && attempts < 200) { let pool = (attempts < 50 && closeCannotSing.length > 2) ? closeCannotSing : cannotSing; let rc = getRandom(pool); if (rc) { let rName = getFullName(rc); if (rName !== correctName && !wrongAnswers.has(rName)) { wrongAnswers.add(rName); } } attempts++; } return { q: `Who can sing '${songName}'?`, correct: correctName, incorrect: Array.from(wrongAnswers), imageUrl: null }; } }
+        ];
+
+        function renderSetupCategories() {
+            const grid = document.getElementById('setup-category-grid'); grid.innerHTML = '';
+            categories.forEach(cat => {
+                const btn = document.createElement('button'); btn.className = `cat-toggle-btn ${cat.selected ? 'selected' : ''}`; btn.innerText = cat.name;
+                btn.onclick = () => { cat.selected = !cat.selected; renderSetupCategories(); }; grid.appendChild(btn);
+            });
+        }
+        function selectAllCats() { categories.forEach(c => c.selected = true); renderSetupCategories(); }
+        function selectNoCats() { categories.forEach(c => c.selected = false); renderSetupCategories(); }
+
+        function startGame() {
+            const activeCats = categories.filter(c => c.selected);
+            if (activeCats.length === 0) { alert("Please select at least one category to play."); return; }
+            let num = parseInt(document.getElementById('question-count').value, 10);
+            if (isNaN(num) || num < 1) num = 10; totalQuestions = num; currentRound = 0; scoreRight = 0; scoreWrong = 0;
+            document.getElementById('setup-screen').style.display = 'none'; document.getElementById('stats-bar').style.display = 'flex';
+            document.getElementById('floating-abandon-btn').style.display = 'flex'; updateStatsUI(); showCategorySelection();
+        }
+
+        function abandonGame() {
+            document.getElementById('category-screen').style.display = 'none'; document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('stats-bar').style.display = 'none'; document.getElementById('floating-abandon-btn').style.display = 'none';
+            document.getElementById('img-shadow-wrapper').style.display = 'none'; document.getElementById('setup-screen').style.display = 'flex';
+        }
+
+        function showCategorySelection() {
+            document.getElementById('game-screen').style.display = 'none'; document.getElementById('category-screen').style.display = 'flex';
+            document.getElementById('cat-round-tracker').innerText = `${currentRound + 1} of ${totalQuestions}`;
+            const activeCats = categories.filter(c => c.selected);
+            let choices = activeCats.length === 1 ? [activeCats[0]] : [...activeCats].sort(() => 0.5 - Math.random()).slice(0, 2);
+            const btnContainer = document.getElementById('category-buttons'); btnContainer.innerHTML = '';
+            choices.forEach((cat, index) => {
+                const btn = document.createElement('button');
+                const colorClass = index === 0 ? 'primary' : 'tertiary'; // <-- Changed here
+                btn.className = `md-btn ${colorClass} cat-btn`;
+                btn.innerText = cat.name;
+                btn.onclick = () => loadQuestion(cat);
+                btnContainer.appendChild(btn);
+            });
+        }
+
+        function loadQuestion(category) {
+            currentRound++; updateStatsUI(); const questionData = category.generate();
+            document.getElementById('category-screen').style.display = 'none'; document.getElementById('game-screen').style.display = 'flex';
+            document.getElementById('btn-next').style.display = 'none';
+            const imgWrapper = document.getElementById('img-shadow-wrapper'); const imgElement = document.getElementById('question-image');
+            if (questionData.imageUrl) { imgElement.src = questionData.imageUrl; imgWrapper.style.display = 'block'; } else { imgWrapper.style.display = 'none'; imgElement.src = ''; }
+            document.getElementById('question-text').innerText = questionData.q;
+            let options = [questionData.correct, ...questionData.incorrect]; options.sort(() => 0.5 - Math.random());
+            const list = document.getElementById('options-list'); list.innerHTML = '';
+            options.forEach(opt => {
+                const btn = document.createElement('button'); btn.className = 'md-btn option-btn'; btn.innerText = opt;
+                btn.onclick = () => handleGuess(btn, opt === questionData.correct, questionData.correct); list.appendChild(btn);
+            });
+        }
+
+        function handleGuess(clickedBtn, isCorrect, correctAnswerText) {
+            const buttons = document.getElementById('options-list').querySelectorAll('button'); buttons.forEach(btn => btn.disabled = true);
+            if (isCorrect) { clickedBtn.classList.add('correct'); scoreRight++; } else {
+                clickedBtn.classList.add('incorrect'); scoreWrong++;
+                buttons.forEach(btn => { if (btn.innerText === correctAnswerText) { btn.classList.add('correct'); } });
+            }
+            updateStatsUI(); const nextBtn = document.getElementById('btn-next'); nextBtn.style.display = 'block';
+            nextBtn.innerText = currentRound >= totalQuestions ? "Finish Quiz" : "Next Question";
+        }
+
+        function updateStatsUI() { document.getElementById('current-q-num').innerText = currentRound === 0 ? 1 : currentRound; document.getElementById('total-q-num').innerText = totalQuestions; document.getElementById('score-right').innerText = scoreRight; document.getElementById('score-wrong').innerText = scoreWrong; }
+        function nextQuestion() { if (currentRound >= totalQuestions) endGame(); else showCategorySelection(); }
+        function endGame() { document.getElementById('game-screen').style.display = 'none'; document.getElementById('stats-bar').style.display = 'none'; document.getElementById('floating-abandon-btn').style.display = 'none'; document.getElementById('img-shadow-wrapper').style.display = 'none'; document.getElementById('end-screen').style.display = 'flex'; document.getElementById('final-right').innerText = scoreRight; document.getElementById('final-wrong').innerText = scoreWrong; }
+        function resetGame() { document.getElementById('end-screen').style.display = 'none'; document.getElementById('setup-screen').style.display = 'flex'; document.getElementById('question-count').focus(); }
+    </script>
+</body>
+
+</html>
